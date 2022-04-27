@@ -8,3 +8,6 @@
     - Visualization distribution (Histogram, box-plot)
     - Variance, means, spread (Inter-quartile range)
     - Skewness
+
+# Postprocess Note
+- Somehow the black-white disparity is almost always better, but not for the rest of the races
