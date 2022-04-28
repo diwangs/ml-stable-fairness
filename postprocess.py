@@ -1,4 +1,4 @@
-from folktables import ACSDataSource, ACSEmployment
+from folktables import ACSDataSource, ACSIncome
 
 import numpy as np
 from sklearn.linear_model import LogisticRegression
@@ -14,17 +14,21 @@ from fairlearn.metrics import equalized_odds_difference, demographic_parity_diff
 
 data_source = ACSDataSource(survey_year='2018', horizon='1-Year', survey='person')
 acs_data = data_source.get_data(states=["CA"], download=True)
-features, label, group = ACSEmployment.df_to_numpy(acs_data)
+acs_data_WA = data_source.get_data(states=["WA"], download=True)
+acs_data_NY = data_source.get_data(states=["NY"], download=True)
+features, label, group = ACSIncome.df_to_numpy(acs_data)
+features_WA, label_WA, group_WA = ACSIncome.df_to_numpy(acs_data_WA)
+features_NY, label_NY, group_NY = ACSIncome.df_to_numpy(acs_data_NY)
 
 X_train, X_test, y_train, y_test, group_train, group_test = train_test_split(
     features, label, group, test_size=0.2, random_state=0)
 
 ###### Your favorite learning algorithm here #####
-model = make_pipeline(StandardScaler(), LogisticRegression())
+model = make_pipeline(StandardScaler(), GradientBoostingClassifier())
 model.fit(X_train, y_train)
 y_hat = model.predict(X_test)
 
-print("Untreated model:")
+print("Untreated model On California:")
 print("{:.5f} -> Accuracy".format(accuracy_score(y_test, y_hat)))
 print("{:.5f} -> Maximum EoO disparity".format(equality_of_opportunity_difference(y_test, y_hat, sensitive_features=group_test)))
 print("{:.5f} -> Equalized Odds disparity".format(equalized_odds_difference(y_test, y_hat, sensitive_features=group_test)))
@@ -44,10 +48,38 @@ postprocess = ThresholdOptimizer(
 postprocess.fit(X_train, y_train, sensitive_features=group_train)
 yf_hat = postprocess.predict(X_test, sensitive_features=group_test)
 
-print("Treated model:")
+print("Treated model on California:")
 print("{:.5f} -> Accuracy".format(accuracy_score(y_test, yf_hat)))
 print("{:.5f} -> Maximum EoO disparity".format(equality_of_opportunity_difference(y_test, yf_hat, sensitive_features=group_test)))
 print("{:.5f} -> Equalized Odds disparity".format(equalized_odds_difference(y_test, yf_hat, sensitive_features=group_test)))
 black_white_yfhat = yf_hat[(group_test == 2) | (group_test == 1)]
 print("{:.5f} -> EoO disparity between blacks and whites".format(equality_of_opportunity_difference(black_white_ytest, black_white_yfhat, sensitive_features=black_white_group)))
 print("{:.5f} -> Equalized Odds disparity between blacks and whites".format(equalized_odds_difference(black_white_ytest, black_white_yfhat, sensitive_features=black_white_group)))
+print()
+
+yf_hat_WA = postprocess.predict(features_WA, sensitive_features=group_WA)
+
+print("Treated model on Washington:")
+print("{:.5f} -> Accuracy".format(accuracy_score(label_WA, yf_hat_WA)))
+print("{:.5f} -> Maximum EoO disparity".format(equality_of_opportunity_difference(label_WA, yf_hat_WA, sensitive_features=group_WA)))
+print("{:.5f} -> Equalized Odds disparity".format(equalized_odds_difference(label_WA, yf_hat_WA, sensitive_features=group_WA)))
+black_white_yfhat = yf_hat_WA[(group_WA == 2) | (group_WA == 1)]
+black_white_ytest = label_WA[(group_WA == 2) | (group_WA == 1)]
+black_white_group = group_WA[(group_WA == 2) | (group_WA == 1)]
+print("{:.5f} -> EoO disparity between blacks and whites".format(equality_of_opportunity_difference(black_white_ytest, black_white_yfhat, sensitive_features=black_white_group)))
+print("{:.5f} -> Equalized Odds disparity between blacks and whites".format(equalized_odds_difference(black_white_ytest, black_white_yfhat, sensitive_features=black_white_group)))
+print()
+
+
+yf_hat_NY = postprocess.predict(features_NY, sensitive_features=group_NY)
+
+print("Treated model on New York:")
+print("{:.5f} -> Accuracy".format(accuracy_score(label_NY, yf_hat_NY)))
+print("{:.5f} -> Maximum EoO disparity".format(equality_of_opportunity_difference(label_NY, yf_hat_NY, sensitive_features=group_NY)))
+print("{:.5f} -> Equalized Odds disparity".format(equalized_odds_difference(label_NY, yf_hat_NY, sensitive_features=group_NY)))
+black_white_yfhat = yf_hat_NY[(group_NY == 2) | (group_NY == 1)]
+black_white_ytest = label_NY[(group_NY == 2) | (group_NY == 1)]
+black_white_group = group_NY[(group_NY == 2) | (group_NY == 1)]
+print("{:.5f} -> EoO disparity between blacks and whites".format(equality_of_opportunity_difference(black_white_ytest, black_white_yfhat, sensitive_features=black_white_group)))
+print("{:.5f} -> Equalized Odds disparity between blacks and whites".format(equalized_odds_difference(black_white_ytest, black_white_yfhat, sensitive_features=black_white_group)))
+print()
