@@ -96,7 +96,7 @@ print("{:.5f} -> Equalized Odds disparity between blacks and whites".format(equa
 
 yf_hat_NY = expgrad.predict(features_NY)
 
-print("Treated model on Wyoming:")
+print("Treated model on New York:")
 print("{:.5f} -> Accuracy".format(accuracy_score(label_NY, yf_hat_NY)))
 print("{:.5f} -> Maximum EoO disparity".format(equality_of_opportunity_difference(label_NY, yf_hat_NY, sensitive_features=group_NY)))
 print("{:.5f} -> Equalized Odds disparity".format(equalized_odds_difference(label_NY, yf_hat_NY, sensitive_features=group_NY)))
