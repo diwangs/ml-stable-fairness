@@ -1,6 +1,7 @@
 from fairlearn.metrics import true_positive_rate, selection_rate, MetricFrame
 from sklearn.metrics import accuracy_score
 
+import numpy as np
 """
 https://arxiv.org/pdf/1610.02413.pdf
 Many fairness metrics:
@@ -22,8 +23,8 @@ def get_stats(model, treated, state, year, X, group, y):
     else:
         y_hat = model.predict(X)
     acc = accuracy_score(y, y_hat)
-    sr = get_sr_metric_frame(y, y_hat, sensitive_features=group).by_group["sr"].tolist()
-    tpr = get_tpr_metric_frame(y, y_hat, sensitive_features=group).by_group["tpr"].tolist()
+    sr = get_sr_metric_frame(y, y_hat, sensitive_features=group).by_group["sr"].reindex(range(1, 10), fill_value=np.nan).to_list()
+    tpr = get_tpr_metric_frame(y, y_hat, sensitive_features=group).by_group["tpr"].reindex(range(1, 10), fill_value=np.nan).to_list()
     row = [state, year, acc, *sr, *tpr]
     return row
 
