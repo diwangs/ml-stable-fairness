@@ -8,6 +8,8 @@ This is the repo for CS475/675 Machine Learning final project by:
 ## Dependencies
 - folktables
 - fairlearn
+- cloudpickle
+- plotly
 
 ## How to run
 To run it, simply install the dependencies and run `main.py`. This will populate the `metrics` directory with CSV files that tells you about the model.
